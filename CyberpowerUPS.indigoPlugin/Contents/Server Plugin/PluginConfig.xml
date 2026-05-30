@@ -1,0 +1,47 @@
+<?xml version="1.0"?>
+<PluginConfig>
+
+    <Field id="titleLabel" type="label" fontSize="large" fontColor="black">
+        <Label>Cyberpower UPS Panel</Label>
+    </Field>
+
+    <Field id="authorLabel" type="label" fontColor="black">
+        <Label>Developed by GlennNZ</Label>
+    </Field>
+
+    <Field id="sep0" type="separator"/>
+
+    <Field id="infoLabel1" type="label" fontColor="blue" fontSize="small">
+        <Label>This plugin connects to a CyberPower UPS running the Power Panel Personal software on your local network. It authenticates via the Power Panel REST API and polls UPS status at the interval below.</Label>
+    </Field>
+
+    <Field id="infoLabel2" type="label" fontColor="blue" fontSize="small">
+        <Label>Connection credentials (host, port, username, password) are configured per-device — create a new Indigo device of type "CyberPower UPS" to set them up.</Label>
+    </Field>
+
+    <Field id="infoLabel3" type="label" fontColor="blue" fontSize="small">
+        <Label>Device states are discovered dynamically from live API data — new states appear automatically the first time the UPS reports a value for them (e.g. battery temperature, bypass voltage).</Label>
+    </Field>
+
+    <Field id="sep1" type="separator"/>
+
+    <Field id="updateInterval" type="textfield" defaultValue="60">
+        <Label>Poll Interval (seconds):</Label>
+        <Description>How often all UPS devices are polled. Minimum 10 seconds. 60 seconds is recommended for normal use.</Description>
+    </Field>
+
+    <Field id="sep2" type="separator"/>
+
+    <Field id="debugLabel" type="label" alignText="right">
+        <Label>Debugging:</Label>
+    </Field>
+
+    <Field id="debugInfoLabel" type="label" fontColor="black" fontSize="small">
+        <Label>Enable debug logging only when diagnosing a problem. Debug output includes raw API responses and every state value written — it is verbose. Disable it again once the issue is resolved.</Label>
+    </Field>
+
+    <Field id="showDebugInfo" type="checkbox" defaultValue="false">
+        <Label>Show Debug Logging</Label>
+    </Field>
+
+</PluginConfig>

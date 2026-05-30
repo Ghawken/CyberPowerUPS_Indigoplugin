@@ -1,0 +1,24 @@
+Version 1.0.2 (2026-05-30)
+- FIX: Double "Bearer" bug — login response body is "Bearer <JWT>"; using it
+  directly as the Authorization header value (not wrapping in f'Bearer {token}')
+- FIX: Plain text password is correct; removed MD5 hashing (API accepts plain text)
+- FIX: Removed passwordPreHashed checkbox from device config (no longer needed)
+- FIX: Logging restored — removed indigo_log_handler.setLevel() manipulation that
+  was silencing all log output; reverted to simple self.debug = True/False pattern
+- Reverted PluginConfig debug option to simple checkbox (showDebugInfo)
+
+Version 1.0.1 (2026-05-30)
+- Moved host/port/username/password from Plugin Preferences to device-level config
+- Added per-device Bearer token cache (supports multiple UPS devices)
+- Added dynamic state update via _safe_update_states() / stateListOrDisplayStateIdChanged()
+- Added validateDeviceConfigUi()
+- Added deviceUpdated() to drop stale token on credential change
+- Improved logging with Python logging handler approach (reverted in 1.0.2)
+- Added showDebugLevel menu in PluginConfig (reverted in 1.0.2)
+
+Version 1.0.0 (2026-05-30)
+- Initial release
+- Polls CyberPower Power Panel REST API for UPS status
+- Bearer token authentication with automatic re-auth on expiry or 401
+- Exposes input, output, battery, and system states as Indigo device states
+- Menu items: Force UPS Status Update, Toggle Debugging

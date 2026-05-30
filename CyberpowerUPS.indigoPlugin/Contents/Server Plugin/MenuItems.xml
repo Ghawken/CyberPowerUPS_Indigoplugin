@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<MenuItems>
+    <MenuItem id="forceUpdate">
+        <Name>Force UPS Status Update</Name>
+        <CallbackMethod>forceUpdate</CallbackMethod>
+    </MenuItem>
+    <MenuItem id="toggleDebug">
+        <Name>Toggle Debugging</Name>
+        <CallbackMethod>toggleDebugEnabled</CallbackMethod>
+    </MenuItem>
+</MenuItems>

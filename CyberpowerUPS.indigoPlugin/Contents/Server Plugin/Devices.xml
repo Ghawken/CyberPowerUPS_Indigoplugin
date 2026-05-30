@@ -1,0 +1,45 @@
+<?xml version="1.0"?>
+<Devices>
+    <Device type="custom" id="upsDevice">
+        <Name>CyberPower UPS</Name>
+        <ConfigUI>
+            <Field id="host" type="textfield" defaultValue="192.168.1.209">
+                <Label>Host Address:</Label>
+                <Description>IP address of the Power Panel host</Description>
+            </Field>
+            <Field id="port" type="textfield" defaultValue="3052">
+                <Label>Port:</Label>
+                <Description>Default is 3052</Description>
+            </Field>
+            <Field id="sep1" type="separator"/>
+            <Field id="username" type="textfield" defaultValue="admin">
+                <Label>Username:</Label>
+            </Field>
+            <Field id="password" type="textfield">
+                <Label>Password:</Label>
+                <Description>Enter your plain-text Power Panel password</Description>
+            </Field>
+        </ConfigUI>
+        <States>
+            <!-- These three states are always present (anchor states).
+                 All other states are registered dynamically at runtime by
+                 getDeviceStateList() from live API data. -->
+            <State id="communicationStatus">
+                <ValueType>Boolean</ValueType>
+                <TriggerLabel>Communication Available</TriggerLabel>
+                <ControlPageLabel>Comm</ControlPageLabel>
+            </State>
+            <State id="systemStateText">
+                <ValueType>String</ValueType>
+                <TriggerLabel>System Status</TriggerLabel>
+                <ControlPageLabel>System</ControlPageLabel>
+            </State>
+            <State id="lastUpdate">
+                <ValueType>String</ValueType>
+                <TriggerLabel>Last Updated</TriggerLabel>
+                <ControlPageLabel>Updated</ControlPageLabel>
+            </State>
+        </States>
+        <UiDisplayStateId>systemStateText</UiDisplayStateId>
+    </Device>
+</Devices>
