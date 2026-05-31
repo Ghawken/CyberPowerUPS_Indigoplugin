@@ -1,6 +1,10 @@
+![CyberPower UPS Panel](Images/banner.png)
+
 # Cyberpower UPS Panel — Indigo Plugin
 
-Monitor a CyberPower UPS from [Indigo](https://www.indigodomo.com) home automation via the Power Panel Personal local REST API. All UPS status data — input power, output load, battery health, runtime, bypass, system faults — is exposed as Indigo device states and updates automatically.
+<img src="Images/icon.png" width="120" align="right" alt="Plugin Icon"/>
+
+Monitor a CyberPower UPS from [Indigo](https://www.indigodomo.com) home automation via the Power Panel Personal local REST API. UPS status, battery health, runtime, input/output power, hardware specs, and system warnings are all exposed as Indigo device states and update automatically.
 
 **Developed by GlennNZ**
 
@@ -17,9 +21,10 @@ Monitor a CyberPower UPS from [Indigo](https://www.indigodomo.com) home automati
 7. [Creating a UPS Device](#7-creating-a-ups-device)
 8. [Device States](#8-device-states)
 9. [Dynamic State Discovery](#9-dynamic-state-discovery)
-10. [Menu Items](#10-menu-items)
-11. [Automation Examples](#11-automation-examples)
-12. [Troubleshooting](#12-troubleshooting)
+10. [Actions](#10-actions)
+11. [Menu Items](#11-menu-items)
+12. [Automation Examples](#12-automation-examples)
+13. [Troubleshooting](#13-troubleshooting)
 
 ---
 
@@ -178,6 +183,8 @@ Create one Indigo device per UPS. Each device has its own host/port/credentials 
 
 States appear in the Indigo device detail panel and are available for triggers, conditions, and control pages. States are **dynamically discovered** — see [section 9](#9-dynamic-state-discovery) for details.
 
+Each poll cycle queries three API endpoints in sequence: `/ups/status`, `/ups/spec`, and `/ups/summary`.
+
 ### Always-Present States (defined in Devices.xml)
 
 | State | Type | Description |
@@ -257,6 +264,43 @@ States appear in the Indigo device detail panel and are available for triggers, 
 | `systemTemperatureCelsius` | Number | Appears on models with ambient sensor |
 | `systemTemperatureFormatted` | String | Formatted temperature string |
 
+### Hardware Spec
+
+Populated from `/ups/spec` on every poll. These values reflect the physical UPS hardware and rating data.
+
+| State | Type | Example |
+|-------|------|---------|
+| `specUpsModel` | String | `OLS3000ERT2UA` |
+| `specSerialNo` | String | `310049ET30000025` |
+| `specUpsType` | String | `On-Line` |
+| `specRatingPower` | String | `3000 VA / 2700 W` |
+| `specRatingVolt` | String | `208~240 V` |
+| `specRatingFreq` | String | `40~70 Hz` |
+| `specMaxCurrent` | String | `13.0 Amp` |
+| `specHardwareVersion` | String | `OS02RV14` |
+| `specUsbVersion` | String | `v.01` |
+| `specDeviceName` | String | Name given to this UPS in Power Panel |
+| `specLocation` | String | Location field from Power Panel settings |
+| `specContact` | String | Contact field from Power Panel settings |
+| `specBatteryReplacedDate` | String | `2025/11/03` |
+| `specNextReplacementDate` | String | `2029/05/03` |
+| `specAloneOutletNumber` | Number | `1` — number of individually switched outlets |
+| `specExternalBatteryCabinets` | Number | `0` |
+| `specIsExpired` | Boolean | `false` — warranty/replacement expired |
+| `specIsThreePhase` | Boolean | `false` |
+| `specEbmSupported` | Boolean | `false` — external battery module |
+| `specIndividualBankControl` | Boolean | `false` — per-outlet switching capability |
+
+### System Summary
+
+Populated from `/ups/summary` on every poll. Useful for triggering on warning conditions.
+
+| State | Type | Example |
+|-------|------|---------|
+| `summaryNormalMessage` | String | `The UPS is working normally.` |
+| `summaryWarningMessage` | String | Empty when healthy; populated with warning text when a fault is present |
+| `summaryHasWarning` | Boolean | `false` — `true` when any warning message is active |
+
 ---
 
 ## 9. Dynamic State Discovery
@@ -264,20 +308,33 @@ States appear in the Indigo device detail panel and are available for triggers, 
 States are **not** pre-defined in a static list. The plugin uses Indigo's `getDeviceStateList()` callback to register states at runtime:
 
 1. The device starts with three anchor states (`communicationStatus`, `systemStateText`, `lastUpdate`)
-2. On the first successful poll, `_build_states()` extracts every non-null field from the API response
-3. Any key not yet registered is added to `pluginProps['discoveredStates']` (a JSON dict) and `stateListOrDisplayStateIdChanged()` is called — Indigo re-invokes `getDeviceStateList()` which now includes the new states
+2. On the first successful poll, the plugin extracts every non-null field from all three API endpoints
+3. Any key not yet registered is added to `pluginProps['discoveredStates']` and `stateListOrDisplayStateIdChanged()` is called — Indigo re-invokes `getDeviceStateList()` which now includes the new states
 4. On subsequent polls the states are already registered and written directly
 
 **Consequences of this design:**
 
 - States whose API values are currently `null` do not appear until the UPS actually reports a value. For example, `batteryTemperatureCelsius` will not exist until the UPS hardware reports a temperature reading.
 - Discovered states survive plugin restarts — they are persisted in `pluginProps` and rebuilt immediately on `deviceStartComm`.
-- If you upgrade the plugin and `_build_states()` extracts new fields, those states appear automatically on the next poll without deleting and recreating the device.
+- If you upgrade the plugin and new fields are added, those states appear automatically on the next poll without deleting and recreating the device.
 - **If you see fewer states than expected**, use **Plugins → Cyberpower UPS Panel → Force UPS Status Update** to trigger an immediate poll and check the Indigo Event Log with debug logging enabled.
 
 ---
 
-## 10. Menu Items
+## 10. Actions
+
+Actions are available under **Actions → Cyberpower UPS Panel** when building action groups or triggers.
+
+### Alarm Test
+
+Triggers the UPS audible alarm test. The UPS will sound briefly to confirm the alarm is functional. Useful for periodic scheduled tests or verifying the alarm after installation.
+
+- Select the target UPS device from the device list
+- No additional configuration required
+
+---
+
+## 11. Menu Items
 
 Access these from **Plugins → Cyberpower UPS Panel** in the Indigo menu bar:
 
@@ -288,7 +345,7 @@ Access these from **Plugins → Cyberpower UPS Panel** in the Indigo menu bar:
 
 ---
 
-## 11. Automation Examples
+## 12. Automation Examples
 
 ### Trigger on Battery Not Fully Charged
 
@@ -310,6 +367,16 @@ Access these from **Plugins → Cyberpower UPS Panel** in the Indigo menu bar:
 - **Trigger**: Device state `inputStateText` changes to anything other than `Normal`
 - **Action**: Start a countdown timer, notify household, log timestamp
 
+### Trigger on System Warning
+
+- **Trigger**: Device state `summaryHasWarning` becomes `true`
+- **Action**: Send an alert with the value of `summaryWarningMessage`
+
+### Scheduled Alarm Test
+
+- **Schedule**: Weekly, at a convenient time
+- **Action**: Run the **Alarm Test** action on the UPS device
+
 ### Control Page Display
 
 Add these states to an Indigo control page for a live UPS dashboard:
@@ -320,10 +387,11 @@ Add these states to an Indigo control page for a live UPS dashboard:
 - `outputWatts` — watts being drawn
 - `systemStateText` — overall health
 - `inputVoltage` / `outputVoltage` — power quality
+- `summaryWarningMessage` — active warnings
 
 ---
 
-## 12. Troubleshooting
+## 13. Troubleshooting
 
 ### Plugin enables but device shows "Connection failed"
 
@@ -377,10 +445,11 @@ Add these states to an Indigo control page for a live UPS dashboard:
 
 | Version | Date | Notes |
 |---------|------|-------|
+| 1.1.1 | 2026-05-31 | Alarm test action; `/ups/spec` and `/ups/summary` endpoints added; spec and summary states |
 | 1.0.6 | 2026-05-30 | Explicit TimeoutError handling; 403 treated as stale token → re-auth; recursion guard |
 | 1.0.5 | 2026-05-30 | Truly dynamic states via `getDeviceStateList()` override; Devices.xml reduced to 3 anchor states |
 | 1.0.4 | 2026-05-30 | Comprehensive `_build_states()` covering all API fields; null-skipping |
 | 1.0.3 | 2026-05-30 | Debug logging of raw API response and state list |
-| 1.0.2 | 2026-05-30 | Fixed double-Bearer auth bug; plain text password (no MD5); logging restored |
+| 1.0.2 | 2026-05-30 | Fixed double-Bearer auth bug; plain text password; logging restored |
 | 1.0.1 | 2026-05-30 | Credentials moved to device level; per-device token cache; dynamic state refresh |
 | 1.0.0 | 2026-05-30 | Initial release |

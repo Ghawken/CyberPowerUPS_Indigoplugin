@@ -12,7 +12,7 @@ import urllib.error
 from datetime import datetime
 
 
-PLUGIN_VERSION      = "1.0.6"
+PLUGIN_VERSION      = "1.1.1"
 TOKEN_LIFETIME_SECS = 1800   # re-authenticate after 30 minutes
 
 # States defined in Devices.xml — always present, never stored in discoveredStates
@@ -269,6 +269,129 @@ class Plugin(indigo.PluginBase):
         return True
 
     # ------------------------------------------------------------------
+    # API: generic POST (per device)
+    # ------------------------------------------------------------------
+
+    def _api_post(self, dev, path, payload, _retrying=False):
+        """POST JSON payload to the given path, handling auth the same way as status fetch."""
+        if not self._ensure_token(dev):
+            return None
+
+        props = dev.pluginProps
+        host  = props.get('host', '').strip()
+        port  = props.get('port', '3052').strip()
+        url   = f"http://{host}:{port}{path}"
+        token = self._tokens[dev.id]['token']
+
+        self.logger.debug(f"{dev.name}: POST {url} payload={payload!r}")
+
+        req = urllib.request.Request(
+            url,
+            data    = json.dumps(payload).encode('utf-8'),
+            headers = {
+                'Authorization': token,
+                'Content-Type' : 'application/json',
+                'Accept'       : 'application/json',
+            },
+            method  = 'POST'
+        )
+
+        try:
+            with urllib.request.urlopen(req, timeout=10) as resp:
+                raw = resp.read().decode('utf-8').strip()
+                self.logger.debug(f"{dev.name}: POST response: {raw!r}")
+                return raw or True
+
+        except urllib.error.HTTPError as e:
+            if e.code in (401, 403) and not _retrying:
+                self.logger.debug(f"{dev.name}: HTTP {e.code} on POST — re-authenticating")
+                self._tokens.pop(dev.id, None)
+                if self._authenticate(dev):
+                    return self._api_post(dev, path, payload, _retrying=True)
+            body = ''
+            try:
+                body = e.read().decode('utf-8')
+            except Exception:
+                pass
+            self.logger.error(f"{dev.name}: POST {path} HTTP {e.code} {e.reason} — {body}")
+
+        except urllib.error.URLError as e:
+            self.logger.error(f"{dev.name}: POST {path} — cannot reach host: {e.reason}")
+
+        except (TimeoutError, socket.timeout):
+            self.logger.error(f"{dev.name}: POST {path} timed out")
+            self._tokens.pop(dev.id, None)
+
+        except Exception:
+            self.logger.exception(f"{dev.name}: unexpected error on POST {path}")
+
+        return None
+
+    # ------------------------------------------------------------------
+    # API: generic GET (per device)
+    # ------------------------------------------------------------------
+
+    def _api_get(self, dev, path, _retrying=False):
+        if not self._ensure_token(dev):
+            return None
+
+        props = dev.pluginProps
+        host  = props.get('host', '').strip()
+        port  = props.get('port', '3052').strip()
+        url   = f"http://{host}:{port}{path}"
+        token = self._tokens[dev.id]['token']
+
+        self.logger.debug(f"{dev.name}: GET {url}")
+
+        req = urllib.request.Request(
+            url,
+            headers = {'Authorization': token, 'Accept': 'application/json'}
+        )
+
+        try:
+            with urllib.request.urlopen(req, timeout=10) as resp:
+                data = json.loads(resp.read().decode('utf-8'))
+                self.logger.debug(f"{dev.name}: GET {path} response:\n{json.dumps(data, indent=2)}")
+                return data
+
+        except urllib.error.HTTPError as e:
+            if e.code in (401, 403) and not _retrying:
+                self.logger.debug(f"{dev.name}: HTTP {e.code} on GET {path} — re-authenticating")
+                self._tokens.pop(dev.id, None)
+                if self._authenticate(dev):
+                    return self._api_get(dev, path, _retrying=True)
+            body = ''
+            try:
+                body = e.read().decode('utf-8')
+            except Exception:
+                pass
+            self.logger.error(f"{dev.name}: GET {path} HTTP {e.code} {e.reason} — {body}")
+
+        except urllib.error.URLError as e:
+            self.logger.error(f"{dev.name}: GET {path} — cannot reach host: {e.reason}")
+
+        except (TimeoutError, socket.timeout):
+            self.logger.error(f"{dev.name}: GET {path} timed out")
+            self._tokens.pop(dev.id, None)
+
+        except Exception:
+            self.logger.exception(f"{dev.name}: unexpected error on GET {path}")
+
+        return None
+
+    # ------------------------------------------------------------------
+    # Action handlers
+    # ------------------------------------------------------------------
+
+    def alarmTest(self, action):
+        dev    = indigo.devices[action.deviceId]
+        result = self._api_post(dev, '/local/rest/v1/diagnostic/alarm_test', {})
+        if result is not None:
+            self.logger.info(f"{dev.name}: alarm test triggered")
+        else:
+            self.logger.error(f"{dev.name}: alarm test failed — check debug log")
+
+    # ------------------------------------------------------------------
     # API: status fetch (per device)
     # ------------------------------------------------------------------
 
@@ -476,6 +599,60 @@ class Plugin(indigo.PluginBase):
 
         return states
 
+    def _build_spec_states(self, data):
+        """Build states from /ups/spec — UPS identity and rating data."""
+        states = []
+
+        def add(key, value):
+            if value is None or value == '':
+                return
+            states.append({'key': key, 'value': value})
+
+        add('specUpsModel',            data.get('upsModel'))
+        add('specSerialNo',            data.get('serialNo'))
+        add('specUpsType',             data.get('upsType'))
+        add('specRatingPower',         data.get('ratingPower'))
+        add('specRatingVolt',          data.get('ratingVolt'))
+        add('specRatingFreq',          data.get('ratingFreq'))
+        add('specMaxCurrent',          data.get('maxCurrent'))
+        add('specHardwareVersion',     data.get('hardwareVersion'))
+        add('specUsbVersion',          data.get('usbVersion'))
+        add('specDeviceName',          data.get('deviveName'))       # API typo: deviveName
+        add('specLocation',            data.get('location'))
+        add('specContact',             data.get('contact'))
+        add('specBatteryReplacedDate', data.get('replacedDate'))
+        add('specNextReplacementDate', data.get('nextReplacementDate'))
+        add('specIsExpired',           bool(data.get('isExpried',             False)))  # API typo: isExpried
+        add('specIsThreePhase',        bool(data.get('isThreePhase',          False)))
+        add('specEbmSupported',        bool(data.get('ebmSupported',          False)))
+        add('specIndividualBankControl', bool(data.get('individualBankControlUps', False)))
+
+        alone = data.get('aloneOutletNumber')
+        if alone is not None:
+            try:
+                add('specAloneOutletNumber', int(alone))
+            except (ValueError, TypeError):
+                pass
+
+        ebm = data.get('externalBatteryCabinetNumber')
+        if ebm is not None:
+            try:
+                add('specExternalBatteryCabinets', int(ebm))
+            except (ValueError, TypeError):
+                pass
+
+        return states
+
+    def _build_summary_states(self, data):
+        """Build states from /ups/summary — normal and warning message lists."""
+        normal  = data.get('summaryNormalMsg')  or []
+        warning = data.get('summaryWarningMsg') or []
+        return [
+            {'key': 'summaryNormalMessage',  'value': ' '.join(normal)},
+            {'key': 'summaryWarningMessage', 'value': ' '.join(warning)},
+            {'key': 'summaryHasWarning',     'value': bool(warning)},
+        ]
+
     def _update_device(self, dev):
         data = self._get_ups_status(dev)
 
@@ -485,6 +662,16 @@ class Plugin(indigo.PluginBase):
             return
 
         states = self._build_states(data)
+
+        time.sleep(0.3)
+        spec_data = self._api_get(dev, '/local/rest/v1/ups/spec')
+        if spec_data:
+            states.extend(self._build_spec_states(spec_data))
+
+        time.sleep(0.3)
+        summary_data = self._api_get(dev, '/local/rest/v1/ups/summary')
+        if summary_data:
+            states.extend(self._build_summary_states(summary_data))
 
         if self.debug:
             lines = [
