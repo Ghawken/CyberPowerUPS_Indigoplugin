@@ -132,29 +132,7 @@ If Power Panel runs on the same Mac as Indigo Server, use `127.0.0.1` as the hos
 
 ## 5. Plugin Installation
 
-### Symlink Install (Recommended for Development)
-
-The plugin directory is symlinked into Indigo's Plugins (Disabled) folder so edits take effect immediately without copying:
-
-```bash
-ln -s "/path/to/Power Indigoplugin/CyberpowerUPS.indigoPlugin" \
-  "/Library/Application Support/Perceptive Automation/Indigo 2025.2/Plugins (Disabled)/CyberpowerUPS.indigoPlugin"
-```
-
-### Copy Install
-
-```bash
-cp -r "CyberpowerUPS.indigoPlugin" \
-  "/Library/Application Support/Perceptive Automation/Indigo 2025.2/Plugins/"
-```
-
-### Enable the Plugin
-
-1. Open the Indigo application
-2. Go to **Plugins → Manage Plugins**
-3. Find **Cyberpower UPS Panel** in the list
-4. Tick the checkbox to enable it
-5. The plugin moves from `Plugins (Disabled)/` to `Plugins/` automatically
+### Double click the downloaded plugin Bundle to install
 
 ---
 
