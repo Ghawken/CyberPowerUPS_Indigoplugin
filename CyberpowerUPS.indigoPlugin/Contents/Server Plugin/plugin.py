@@ -12,7 +12,7 @@ import urllib.error
 from datetime import datetime
 
 
-PLUGIN_VERSION      = "1.1.1"
+PLUGIN_VERSION      = "1.1.2"
 TOKEN_LIFETIME_SECS = 1800   # re-authenticate after 30 minutes
 
 # States defined in Devices.xml — always present, never stored in discoveredStates
@@ -46,7 +46,7 @@ class Plugin(indigo.PluginBase):
 
         for key, type_name in sorted(self._get_discovered_states(dev).items()):
             label    = self._camel_to_label(key)
-            cp_label = label[:20]
+            cp_label = label
             if type_name == 'bool':
                 state_list.append(self.getDeviceStateDictForBoolTrueFalseType(key, label, cp_label))
             elif type_name == 'number':
