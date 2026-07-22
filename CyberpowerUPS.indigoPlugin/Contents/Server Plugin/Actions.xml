@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<Actions>
+<Action id="alarmTest" deviceFilter="self.upsDevice">
+        <Name>Alarm Test</Name>
+        <CallbackMethod>alarmTest</CallbackMethod>
+    </Action>
+</Actions>

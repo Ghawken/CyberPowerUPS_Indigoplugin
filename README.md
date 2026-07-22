@@ -4,7 +4,7 @@
 
 <img src="Images/icon.png" width="120" align="right" alt="Plugin Icon"/>
 
-Monitor a CyberPower UPS from [Indigo](https://www.indigodomo.com) home automation via the Power Panel Personal local REST API. UPS status, battery health, runtime, input/output power, hardware specs, and system warnings are all exposed as Indigo device states and update automatically.
+Monitor a CyberPower UPS from [Indigo](https://www.indigodomo.com) home automation via the Power Panel Business local REST API. UPS status, battery health, runtime, input/output power, hardware specs, and system warnings are all exposed as Indigo device states and update automatically.
 
 **Developed by GlennNZ**
 
@@ -12,9 +12,9 @@ Monitor a CyberPower UPS from [Indigo](https://www.indigodomo.com) home automati
 
 ## Contents
 
-1. [What is Power Panel Personal?](#1-what-is-power-panel-personal)
-2. [Installing Power Panel Personal](#2-installing-power-panel-personal)
-3. [Configuring Power Panel Personal](#3-configuring-power-panel-personal)
+1. [What is Power Panel Business?](#1-what-is-power-panel-business)
+2. [Installing Power Panel Business](#2-installing-power-panel-business)
+3. [Configuring Power Panel Business](#3-configuring-power-panel-business)
 4. [Plugin Requirements](#4-plugin-requirements)
 5. [Plugin Installation](#5-plugin-installation)
 6. [Plugin Configuration](#6-plugin-configuration)
@@ -28,28 +28,28 @@ Monitor a CyberPower UPS from [Indigo](https://www.indigodomo.com) home automati
 
 ---
 
-## 1. What is Power Panel Personal?
+## 1. What is Power Panel Business?
 
-**CyberPower Power Panel Personal** is free software published by CyberPower Systems that runs on a computer connected to a CyberPower UPS via USB. It provides:
+**CyberPower Power Panel Business** is software published by CyberPower Systems that runs on a computer connected to a CyberPower UPS via USB. It provides:
 
 - Real-time UPS monitoring (input voltage, output load, battery capacity, runtime)
 - Automatic safe shutdown of the connected computer during a power outage
 - A local web interface accessible from any browser on your network
 - A REST API — which this plugin uses to pull live data into Indigo
 
-Power Panel Personal runs as a background service on macOS, Windows, or Linux. It does **not** require a CyberPower cloud account; everything operates entirely on your local network.
+Power Panel Business runs as a background service on macOS, Windows, or Linux. It does **not** require a CyberPower cloud account; everything operates entirely on your local network.
 
 > **Supported UPS models**: Most CyberPower Smart App UPS models with a USB port (CP series, PR series, OR series). Check the CyberPower website for the full compatibility list.
 
 ---
 
-## 2. Installing Power Panel Personal
+## 2. Installing Power Panel Business
 
 ### Download
 
-Download Power Panel Personal from the CyberPower website:
+Download Power Panel Business from the CyberPower website:
 
-**CyberPower Systems** → Support → Software → Power Panel Personal
+**CyberPower Systems** → Support → Software → Power Panel Business
 
 Choose the installer for your operating system (macOS, Windows, or Linux). Version 1.4.x and later include the REST API used by this plugin.
 
@@ -62,7 +62,7 @@ Choose the installer for your operating system (macOS, Windows, or Linux). Versi
 
 ### Linux / NAS Installation
 
-Power Panel Personal also runs on Linux, making it suitable for always-on devices like a Synology NAS, Raspberry Pi, or Ubuntu server:
+Power Panel Business also runs on Linux, making it suitable for always-on devices like a Synology NAS, Raspberry Pi, or Ubuntu server:
 
 ```bash
 # Debian/Ubuntu — install the .deb package
@@ -83,13 +83,13 @@ Open a browser and navigate to:
 http://<host-ip>:3052
 ```
 
-You should see the Power Panel Personal web UI showing your UPS model, battery status, and input/output readings. If the page loads, the REST API is available.
+You should see the Power Panel Business web UI showing your UPS model, battery status, and input/output readings. If the page loads, the REST API is available.
 
 > **Tip**: If the UPS is connected to a Mac that also runs Indigo, the host IP is typically `127.0.0.1` or the Mac's LAN IP. If Power Panel runs on a separate device (NAS, Raspberry Pi), use that device's LAN IP.
 
 ---
 
-## 3. Configuring Power Panel Personal
+## 3. Configuring Power Panel Business
 
 ### Setting a Password
 
@@ -129,7 +129,7 @@ If Power Panel runs on the same Mac as Indigo Server, use `127.0.0.1` as the hos
 |-------------|--------|
 | Indigo version | 2025.1 or later (ServerApiVersion 3.0) |
 | Python | 3.10+ (included with Indigo 2023.2+) |
-| Power Panel Personal | 1.4.x or later, running locally |
+| Power Panel Business | 1.4.x or later, running locally |
 | Network | Indigo Mac must reach Power Panel host on port 3052 |
 | UPS connection | USB cable from UPS to the Power Panel host |
 

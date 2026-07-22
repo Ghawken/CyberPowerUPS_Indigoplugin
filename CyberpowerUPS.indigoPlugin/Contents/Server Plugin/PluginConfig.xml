@@ -12,7 +12,7 @@
     <Field id="sep0" type="separator"/>
 
     <Field id="infoLabel1" type="label" fontColor="blue" fontSize="small">
-        <Label>This plugin connects to a CyberPower UPS running the Power Panel Personal software on your local network. It authenticates via the Power Panel REST API and polls UPS status at the interval below.</Label>
+        <Label>This plugin connects to a CyberPower UPS running the Power Panel Business software on your local network. It authenticates via the Power Panel Business REST API and polls UPS status at the interval below.</Label>
     </Field>
 
     <Field id="infoLabel2" type="label" fontColor="blue" fontSize="small">
