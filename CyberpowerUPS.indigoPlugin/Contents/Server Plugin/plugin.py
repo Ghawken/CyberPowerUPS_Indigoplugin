@@ -12,7 +12,7 @@ import urllib.error
 from datetime import datetime
 
 
-PLUGIN_VERSION      = "1.1.2"
+PLUGIN_VERSION      = "1.1.3"
 TOKEN_LIFETIME_SECS = 1800   # re-authenticate after 30 minutes
 
 # States defined in Devices.xml — always present, never stored in discoveredStates

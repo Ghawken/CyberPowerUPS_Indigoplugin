@@ -445,7 +445,8 @@ Add these states to an Indigo control page for a live UPS dashboard:
 
 | Version | Date | Notes |
 |---------|------|-------|
-| 1.1.1 | 2026-05-31 | Alarm test action; `/ups/spec` and `/ups/summary` endpoints added; spec and summary states |
+| 1.1.3 | 2026-07-23 | Corrected software name to Power Panel Business throughout |
+| 1.1.2 | 2026-05-31 | Alarm test action; `/ups/spec` and `/ups/summary` endpoints added; spec and summary states; full-length state labels |
 | 1.0.6 | 2026-05-30 | Explicit TimeoutError handling; 403 treated as stale token → re-auth; recursion guard |
 | 1.0.5 | 2026-05-30 | Truly dynamic states via `getDeviceStateList()` override; Devices.xml reduced to 3 anchor states |
 | 1.0.4 | 2026-05-30 | Comprehensive `_build_states()` covering all API fields; null-skipping |
