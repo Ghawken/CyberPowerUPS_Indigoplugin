@@ -12,7 +12,7 @@ import urllib.error
 from datetime import datetime
 
 
-PLUGIN_VERSION      = "1.1.3"
+PLUGIN_VERSION      = "1.1.4"
 TOKEN_LIFETIME_SECS = 1800   # re-authenticate after 30 minutes
 
 # States defined in Devices.xml — always present, never stored in discoveredStates
@@ -524,12 +524,12 @@ class Plugin(indigo.PluginBase):
 
         # --- Top level ---
         add('communicationStatus', bool(data.get('communicationAvaiable', False)))
-        add('deviceId',            int(data.get('deviceId', 0)))
+        add('deviceId',            int(data.get('deviceId') or 0))
 
         # --- Input ---
         inp = data.get('input') or {}
         add('inputAvailable',  bool(inp.get('available', False)))
-        add('inputState',      int(inp.get('state', 0)))
+        add('inputState',      int(inp.get('state') or 0))
         add('inputStateText',  inp.get('stateText'))
         list_num_state('inputVoltage',     inp.get('voltages'),     dp=1)
         list_num_state('inputFrequency',   inp.get('frequencies'),  dp=2)
@@ -539,7 +539,7 @@ class Plugin(indigo.PluginBase):
         # --- Output ---
         out = data.get('output') or {}
         add('outputAvailable',  bool(out.get('available', False)))
-        add('outputState',      int(out.get('state', 0)))
+        add('outputState',      int(out.get('state') or 0))
         add('outputStateText',  out.get('stateText'))
         list_num_state('outputVoltage',       out.get('voltages'),       dp=1)
         list_num_state('outputCurrent',       out.get('currents'),       dp=1)
@@ -557,7 +557,7 @@ class Plugin(indigo.PluginBase):
         # --- Battery ---
         bat = data.get('battery') or {}
         add('batteryAvailable',              bool(bat.get('available', False)))
-        add('batteryState',                  int(bat.get('state', 0)))
+        add('batteryState',                  int(bat.get('state') or 0))
         add('batteryStateText',              bat.get('stateText'))
         num_state('batteryVoltage',          bat.get('voltage'),   dp=1)
         num_state('batteryCapacityPercent',  bat.get('capacity'),  dp=0)
@@ -587,7 +587,7 @@ class Plugin(indigo.PluginBase):
         # --- System ---
         sys_data = data.get('system') or {}
         add('systemAvailable',             bool(sys_data.get('available', False)))
-        add('systemState',                 int(sys_data.get('state', 0)))
+        add('systemState',                 int(sys_data.get('state') or 0))
         add('systemStateText',             sys_data.get('stateText'))
         add('systemHardwareFaultAvailable', bool(sys_data.get('hardwareFaultAvailable', False)))
         add('systemHardwareFaultCode',     sys_data.get('originalHardwareFaultCode'))
